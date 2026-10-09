@@ -15,9 +15,10 @@ impl RenderEngine {
         Self { fps }
     }
 
-    /// Render HTML to MP4 video
-    pub async fn render(&self, html_path: &Path, output_path: &str) -> Result<()> {
-        tracing::info!("Rendering {} to {} at {}fps", html_path.display(), output_path, self.fps);
+    /// Render HTML directory to MP4 video
+    /// html_dir should contain index.html
+    pub async fn render(&self, html_dir: &Path, output_path: &str) -> Result<()> {
+        tracing::info!("Rendering {} to {} at {}fps", html_dir.display(), output_path, self.fps);
 
         // Ensure hyperframes CLI is available
         self.ensure_hyperframes().await?;
@@ -26,7 +27,7 @@ impl RenderEngine {
             .args([
                 "hyperframes",
                 "render",
-                html_path.to_str().unwrap(),
+                html_dir.to_str().unwrap(),
                 "-o", output_path,
                 "--fps", &self.fps.to_string(),
             ])
@@ -44,8 +45,8 @@ impl RenderEngine {
     }
 
     /// Preview HTML in browser
-    pub async fn preview(&self, html_path: &Path) -> Result<()> {
-        tracing::info!("Opening preview for {}", html_path.display());
+    pub async fn preview(&self, html_dir: &Path) -> Result<()> {
+        tracing::info!("Opening preview for {}", html_dir.display());
 
         self.ensure_hyperframes().await?;
 
@@ -53,7 +54,7 @@ impl RenderEngine {
         cmd.args([
             "hyperframes",
             "preview",
-            html_path.to_str().unwrap(),
+            html_dir.to_str().unwrap(),
         ]);
 
         // Spawn and detach for preview

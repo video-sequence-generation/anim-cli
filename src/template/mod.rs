@@ -19,15 +19,26 @@ impl HtmlTemplate {
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
   <style>
 {css}
   </style>
 </head>
-<body data-duration="{duration}s">
+<body>
+  <div
+    id="root"
+    data-composition-id="main"
+    data-start="0"
+    data-width="1920"
+    data-height="1080"
+    data-duration="{duration}"
+    style="position: relative; width: 1920px; height: 1080px; overflow: hidden;"
+  >
 {html}
+  </div>
   <script>
 {js}
-    // HyperFrames auto-binds renderFrame to frame clock
   </script>
 </body>
 </html>"#,

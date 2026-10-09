@@ -9,7 +9,7 @@ use std::time::Duration;
 use crate::llm::schema::{LlmRequest, SystemInstruction, Content, Part, GenerationConfig, LlmResponse, AnimationCode};
 
 const GEMINI_API_BASE: &str = "https://generativelanguage.googleapis.com/v1beta/models";
-const MODEL: &str = "gemini-2.5-flash";
+const MODEL: &str = "gemini-3.1-flash-lite";
 const SYSTEM_PROMPT: &str = include_str!("../../prompts/system_prompt.txt");
 
 /// Gemini API client

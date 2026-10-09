@@ -78,12 +78,13 @@ async fn run_render(prompt: String, duration: u32, output: String, fps: u32, pre
     std::fs::write(&html_path, html_content)?;
     tracing::info!("Written HTML to {}", html_path.display());
 
-    // 4. Render using HyperFrames
+    // 4. Render using HyperFrames (pass temp dir, not file)
     let render_engine = RenderEngine::new(fps);
+    let html_dir = temp_dir.path();
     if preview {
-        render_engine.preview(&html_path).await?;
+        render_engine.preview(html_dir).await?;
     } else {
-        render_engine.render(&html_path, &output).await?;
+        render_engine.render(html_dir, &output).await?;
         tracing::info!("Video saved to {}", output);
     }
 
