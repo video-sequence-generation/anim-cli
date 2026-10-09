@@ -7,6 +7,7 @@ use std::env;
 use std::time::Duration;
 
 use crate::llm::schema::{LlmRequest, SystemInstruction, Content, Part, GenerationConfig, LlmResponse, AnimationCode};
+use crate::llm::{parse_animation_code, LlmClient};
 
 const GEMINI_API_BASE: &str = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL: &str = "gemini-3.1-flash-lite";
@@ -99,9 +100,14 @@ impl GeminiClient {
             .text.clone();
 
         // Parse the JSON from the response text
-        let animation_code: AnimationCode = serde_json::from_str(&text)
-            .context("Failed to parse animation code JSON from LLM response")?;
+        parse_animation_code(&text)
+    }
+}
 
-        Ok(animation_code)
+#[async_trait::async_trait]
+impl LlmClient for GeminiClient {
+    async fn generate_animation(&self, prompt: &str, duration: u32) -> Result<AnimationCode> {
+        // Delegate to the inherent method so both call paths share one implementation.
+        GeminiClient::generate_animation(self, prompt, duration).await
     }
 }

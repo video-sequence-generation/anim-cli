@@ -40,16 +40,39 @@ anim-cli render "Glowing particle system" --preview
 anim-cli render "Smooth wave animation" --fps 30 --output wave.mp4
 ```
 
+### Local inference server
+
+Use `--local-api` to generate the composition with a local
+OpenAI-compatible server instead of Gemini:
+
+```bash
+export LOCAL_API_URL="http://localhost:8081/v1"   # default
+# Optional: override the model name sent in the request
+export LOCAL_API_MODEL="my-model"
+
+anim-cli render "Neon cyberpunk radar sweep" --duration 6 --local-api
+```
+
+The client speaks the `POST /v1/chat/completions` SSE protocol: it sends
+`stream: true` and concatenates every `choices[0].delta.content` fragment
+until `data: [DONE]`. `reasoning_content` fragments are discarded, and
+`chat_template_kwargs.enable_thinking` is forced off — reasoning-tuned models
+otherwise emit an unbounded reasoning stream and never produce an answer.
+
+Both backends return the same `{html, css, js}` shape, so the generated
+composition and rendered video are identical in structure regardless of which
+one you use.
+
 ## Requirements
 
-- **Node.js** (for HyperFrames CLI): `npm install -g @hyperframes/cli`
+- **Node.js** (for HyperFrames CLI): `npm install -g hyperframes`
 - **FFmpeg** (for video encoding)
-- **LLM API Key**: Set `GEMINI_API_KEY` environment variable
+- **An LLM**: either `GEMINI_API_KEY` (default) or a local server via `--local-api`
 
 ## Architecture
 
 ```
-User Prompt → LLM (Gemini) → HTML/CSS/JS → HyperFrames → MP4
+User Prompt → LLM (Gemini or local server) → HTML/CSS/JS → HyperFrames → MP4
 ```
 
 - **CLI**: Rust (clap, tokio)

@@ -8,7 +8,7 @@ mod render;
 mod template;
 mod utils;
 
-use llm::GeminiClient;
+use llm::{GeminiClient, LlmClient, LocalClient};
 use render::RenderEngine;
 use template::HtmlTemplate;
 use utils::{TempDir, setup_logging};
@@ -43,6 +43,11 @@ enum Commands {
         /// Preview in browser instead of rendering to video
         #[arg(long)]
         preview: bool,
+
+        /// Use a local OpenAI-compatible inference server instead of Gemini.
+        /// Endpoint comes from LOCAL_API_URL (default http://localhost:8081/v1).
+        #[arg(long)]
+        local_api: bool,
     },
 }
 
@@ -52,17 +57,29 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Render { prompt, duration, output, fps, preview } => {
-            run_render(prompt, duration, output, fps, preview).await
+        Commands::Render { prompt, duration, output, fps, preview, local_api } => {
+            run_render(prompt, duration, output, fps, preview, local_api).await
         }
     }
 }
 
-async fn run_render(prompt: String, duration: u32, output: String, fps: u32, preview: bool) -> Result<()> {
+async fn run_render(
+    prompt: String,
+    duration: u32,
+    output: String,
+    fps: u32,
+    preview: bool,
+    local_api: bool,
+) -> Result<()> {
     tracing::info!("Starting render: \"{}\" ({}s @ {}fps)", prompt, duration, fps);
 
-    // 1. Initialize LLM client
-    let llm_client = GeminiClient::new()?;
+    // 1. Select the LLM backend
+    let llm_client: Box<dyn LlmClient> = if local_api {
+        tracing::info!("Using local inference server");
+        Box::new(LocalClient::new()?)
+    } else {
+        Box::new(GeminiClient::new()?)
+    };
 
     // 2. Generate animation code from prompt
     let animation_code = llm_client.generate_animation(&prompt, duration).await?;
