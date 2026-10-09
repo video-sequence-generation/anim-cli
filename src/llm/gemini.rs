@@ -64,16 +64,18 @@ impl GeminiClient {
             },
         };
 
-        let url = format!("{}/{}:generateContent?key={}", GEMINI_API_BASE, MODEL, self.api_key);
+        let url = format!("{}/{}:generateContent", GEMINI_API_BASE, MODEL);
 
         // ureq is synchronous, so we run it in a blocking task
         let response = tokio::task::spawn_blocking({
             let agent = self.agent.clone();
             let url = url.clone();
             let request = request.clone();
+            let api_key = self.api_key.clone();
             move || {
                 agent
                     .post(&url)
+                    .set("x-goog-api-key", &api_key)
                     .send_json(&request)
             }
         }).await
